@@ -1,0 +1,34 @@
+import pyautogui
+import time
+
+# CONFIGURAÇÃO DE SEGURANÇA
+# Se o mouse for para o canto da tela, o programa para (evita travar o PC)
+pyautogui.FAILSAFE = True
+
+# Coordenadas do HUD do Free Fire (Ajuste conforme sua resolução)
+# Exemplo: (X, Y)
+mapeamento = {
+    "w": (500, 800),    # Joystick frente
+    "space": (1800, 700), # Pular
+    "r": (1700, 900),    # Recarregar
+    "f": (1500, 400),    # Pegar loot
+}
+
+print("--- CLEITIN MAPEADOR COM PYAUTOGUI ---")
+print("Pressione CTRL+C no terminal para parar.")
+
+try:
+    while True:
+        # Exemplo: se você digitar a tecla no terminal, ele clica no jogo
+        tecla = input("Tecla pressionada: ").lower()
+        
+        if tecla in mapeamento:
+            x, y = mapeamento[tecla]
+            # Move o mouse e clica instantaneamente
+            pyautogui.click(x, y)
+            print(f"Clicou em {x}, {y} para a tecla {tecla}")
+        else:
+            print("Tecla não mapeada.")
+
+except KeyboardInterrupt:
+    print("\nEncerrado.")
