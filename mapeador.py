@@ -1,42 +1,43 @@
-import pyautogui
-import time
-import sys
+import pydirectinput
+from pynput import keyboard
+import threading
 
-# Configurações iniciais
-pyautogui.FAILSAFE = True
-LARGURA, ALTURA = pyautogui.size()
-CENTRO_X, CENTRO_Y = LARGURA // 2, ALTURA // 2
+# --- CONFIGURAÇÕES DO HUD (X, Y) ---
+# Ajuste esses números de acordo com a posição dos botões na sua tela
+HUD = {
+    'space': (1800, 700),  # Pular
+    'r': (1700, 900),      # Recarregar
+    'f': (1500, 400),      # Pegar loot
+    'q': (300, 300),       # Trocar arma
+}
 
-# Estado do mouse (False = Câmera travada/Mapeador ativo, True = Mouse livre)
-mouse_livre = False
+print("=== CLEITIN MAPEADOR ATIVO ===")
+print("Pressione ESC para fechar o mapeador")
 
-def alternar_mouse():
-    global mouse_livre
-    mouse_livre = not mouse_livre
-    if not mouse_livre:
-        pyautogui.moveTo(CENTRO_X, CENTRO_Y)
-        print(">>> MODO COMBATE: Mouse travado na câmera.")
-    else:
-        print(">>> MODO CURSOR: Mouse liberado.")
-
-print(f"--- CLEITIN MAPEADOR V2 ---")
-print(f"Resolução detectada: {LARGURA}x{ALTURA}")
-print("Pressione 'M' para simular o bloqueio de câmera (Exemplo)")
-
-try:
-    while True:
-        if not mouse_livre:
-            # Mantém o mouse no centro para o jogo entender o giro de câmera
-            # Em um mapeador real, aqui capturaríamos o deslocamento (delta)
-            pyautogui.moveTo(CENTRO_X, CENTRO_Y)
+def ao_pressionar(tecla):
+    try:
+        # Converte a tecla pressionada para texto
+        char = tecla.char.lower()
         
-        # Simulação de comando via terminal para teste
-        cmd = input("Comando (m = travar/destravar, s = sair): ").lower()
-        
-        if cmd == 'm':
-            alternar_mouse()
-        elif cmd == 's':
-            break
+        if char in HUD:
+            x, y = HUD[char]
+            # Usa pydirectinput para ser aceito pelo jogo (DirectX)
+            pydirectinput.click(x, y)
+            print(f"[!] Tecla {char}: Clicando em ({x}, {y})")
+            
+    except AttributeError:
+        # Trata teclas especiais (como space)
+        nome_tecla = str(tecla).replace('Key.', '')
+        if nome_tecla in HUD:
+            x, y = HUD[nome_tecla]
+            pydirectinput.click(x, y)
+            print(f"[!] Tecla {nome_tecla}: Clicando em ({x}, {y})")
 
-except KeyboardInterrupt:
-    print("\nSaindo...")
+def ao_soltar(tecla):
+    if tecla == keyboard.Key.esc:
+        # Para o mapeador
+        return False
+
+# Inicia o "ouvinte" do teclado em segundo plano
+with keyboard.Listener(on_press=ao_pressionar, on_release=ao_soltar) as listener:
+    listener.join()
